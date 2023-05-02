@@ -98,7 +98,7 @@ def rotmat_to_euler(R):
 def torque_func(time, theta, w, alpha, law):
     t = [0, 0, 0]
 
-    max_torque = 1.65e-2 #max torque in Nm
+    max_torque = 1.65e-5 #max torque in Nm
 
     if law == "proporational":
         #simple inverse proportional control
@@ -124,7 +124,7 @@ def main():
 
     # Propagate the attitude and convert the rotation matrix to Euler angles
     R, H = attitude_propagator(dt, t_end, w0, I, torque_func)
-    euler_angles = rotmat_to_euler(R)
+    euler_angles = rotmat_to_euler(R) 
     
     # Plot the Euler angles over time
     plt.subplot(2, 1, 1)
