@@ -20,6 +20,8 @@ def attitude_propagator(dt, t_end, w0, I, torque_func, tolerance=1e-4):
     w = w0.copy()
     dw=0
     Is_Settled = False
+    dw_dt = 0
+    w_list = []
 
     # Initialize the rotation matrix as the identity matrix
     R[:, :, 0] = np.eye(3)
@@ -34,15 +36,16 @@ def attitude_propagator(dt, t_end, w0, I, torque_func, tolerance=1e-4):
         # Print progress
         if t%30 == 0:
             print(f"{int(100*t/t_end)}% done")
-        
-        # Find angular acceleration for PID control
-        alpha = dw/dt
 
         # Find change in angle for PID control
-        theta = w*dt
+        w_list.append(w)
+        if len(w_list) > 100:
+            w_list.pop(0)
+        theta = sum(w_list)*dt
+        theta += w*dt
 
         # Comput torque vector
-        tau = torque_func(t, theta, w, alpha, law="PID")
+        tau = torque_func(t, theta, w, dw_dt, law="PID")
 
         # Compute the time derivative of the angular velocity
         dw_dt = np.linalg.inv(I) @ (tau - np.cross(w, I @ w))
@@ -98,14 +101,14 @@ def rotmat_to_euler(R):
 def torque_func(time, theta, w, alpha, law):
     t = [0, 0, 0]
 
-    max_torque = 1.65e-5 #max torque in Nm
+    max_torque = 1.65e-3 #max torque in Nm
 
     if law == "proporational":
         #simple inverse proportional control
         t = -w
     if law == "PID":
         #PID control
-        t = -1*w - 0.1*alpha - 0.1*theta
+        t = -1*w - 0.1*theta + 0.01*alpha 
 
     for i in range(3):
         if t[i] > max_torque:
