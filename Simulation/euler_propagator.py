@@ -101,7 +101,7 @@ def rotmat_to_euler(R):
 def torque_func(time, theta, w, alpha, law):
     t = [0, 0, 0]
 
-    max_torque = 1.65e-3 #max torque in Nm
+    max_torque = 1.65e-5 #max torque in Nm
 
     if law == "proporational":
         #simple inverse proportional control
