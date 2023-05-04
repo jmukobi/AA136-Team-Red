@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 def attitude_propagator(dt, t_end, w0, I, torque_func, tolerance=1e-4):
     """
@@ -113,8 +114,14 @@ def torque_func(time, theta, w, alpha, law):
         elif t[i] < -max_torque:
             t[i] = -max_torque
 
+    t = inject_disturbances(time, t)
     return t
     
+def inject_disturbances(time, t):
+    for i in range(3):
+        t[i] += random.randrange(-1, 1)*1e-6
+    return t
+
 def main():
     # Define the simulation parameters
     dt = 0.05  # seconds
