@@ -5,18 +5,23 @@ PyCubed Beep-Sat Demo
 
 M. Holliday
 """
-import pycubed
+
+
+print('\n{lines}\n{:^40}\n{lines}\n'.format('Starting BelugaSat',lines='-'*40))
+
+print('Initializing PyCubed Hardware...')
+import os, tasko
+#import pycubed
+print("importing pycubed")
+from pycubed import cubesat
+
+#cubesat = pycubed.cubesat()
+
+# create asyncio object
+cubesat.tasko=tasko
+
 while True:
     try:
-        print('\n{lines}\n{:^40}\n{lines}\n'.format('Starting BelugaSat',lines='-'*40))
-
-        print('Initializing PyCubed Hardware...')
-        import os, tasko
-        import pycubed
-        from pycubed import cubesat
-
-        # create asyncio object
-        cubesat.tasko=tasko
         # Dict to store scheduled objects by name
         cubesat.scheduled_tasks={}
 

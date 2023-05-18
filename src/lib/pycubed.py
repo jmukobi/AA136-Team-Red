@@ -1,13 +1,7 @@
 # type: ignore
 """
-CircuitPython driver for PyCubed satellite board.
-PyCubed Hardware Version: mainboard-v05
-CircuitPython Version: 7.0.0 alpha
-Library Repo: https://github.com/pycubed/library_pycubed.py
-
-* Author(s): Max Holliday
+CircuitPython driver for Feather M4 board.
 """
-print("ayo")
 # Common CircuitPython Libs
 import board#, microcontroller
 import busio, time, sys
@@ -28,19 +22,19 @@ from os import listdir,stat,statvfs,mkdir,chdir
 #from micropython import const
 
 #Sensor Imports
-import board
+#import board
 from adafruit_lsm6ds.lsm6dsox import LSM6DSOX as LSM6DS
 from adafruit_lis3mdl import LIS3MDL
 from adafruit_motorkit import MotorKit
 
 #Magnetorquer Imports
-import board
-from adafruit_motorkit import MotorKit
+#import board
+#from adafruit_motorkit import MotorKit
 
 #Reaction Wheel Imports
-import board
+#import board
 import pwmio
-import digitalio
+#import digitalio
 
 """
 # NVM register numbers
@@ -108,30 +102,32 @@ class Satellite:
 
         # Define SPI,I2C,UART
         self.i2c = board.I2C()  # uses board.SCL and board.SDA
-        self.accel_gyro = LSM6DS(i2c)
-        self.mag = LIS3MDL(i2c)
+        self.accel_gyro = LSM6DS(self.i2c)
+        self.mag = LIS3MDL(self.i2c)
         self.spi   = board.SPI()
         self.uart  = busio.UART(board.TX,board.RX)
 
         # Define Magnetorquer Pins
-        self.motorwing = MotorKit(i2c=i2c)
+        self.motorwing = MotorKit(i2c=self.i2c)
 
+        #digitalio.DigitalInOut(board.A3).deinit()
+        #pwmio.PWMOut(board.A2).deinit()
         #Define Motor Pins
-        self.pwm1 = pwmio.PWMOut(board.A3, frequency=5000, duty_cycle=1)
-        self.dir1 = digitalio.DigitalInOut(board.A4)
+        self.pwm1 = pwmio.PWMOut(board.A2, frequency=5000, duty_cycle=1)
+        self.dir1 = digitalio.DigitalInOut(board.A3)
         self.dir1.direction = digitalio.Direction.OUTPUT
 
-        self.pwm2 = pwmio.PWMOut(board.A3, frequency=5000, duty_cycle=1)
-        self.dir2 = digitalio.DigitalInOut(board.A4)
+        self.pwm2 = pwmio.PWMOut(board.A4, frequency=5000, duty_cycle=1)
+        self.dir2 = digitalio.DigitalInOut(board.A5)
         self.dir2.direction = digitalio.Direction.OUTPUT
 
-        self.pwm3 = pwmio.PWMOut(board.A3, frequency=5000, duty_cycle=1)
-        self.dir3 = digitalio.DigitalInOut(board.A4)
+        self.pwm3 = pwmio.PWMOut(board.D10, frequency=5000, duty_cycle=1)
+        self.dir3 = digitalio.DigitalInOut(board.D9)
         self.dir3.direction = digitalio.Direction.OUTPUT
 
         # Define GPS
-        self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
-        self.en_gps.switch_to_output()
+        #self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
+        #self.en_gps.switch_to_output()
 
         # Define filesystem stuff
         self.logfile="/log.txt"

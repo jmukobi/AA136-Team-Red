@@ -4,16 +4,16 @@ import pwmio
 import digitalio
 
 #Define IO
-pwm1 = pwmio.PWMOut(board.A3, frequency=5000, duty_cycle=1)
-dir1 = digitalio.DigitalInOut(board.A4)
+pwm1 = pwmio.PWMOut(board.A2, frequency=5000, duty_cycle=1)
+dir1 = digitalio.DigitalInOut(board.A3)
 dir1.direction = digitalio.Direction.OUTPUT
 
-pwm2 = pwmio.PWMOut(board.A3, frequency=5000, duty_cycle=1)
-dir2 = digitalio.DigitalInOut(board.A4)
+pwm2 = pwmio.PWMOut(board.A4, frequency=5000, duty_cycle=1)
+dir2 = digitalio.DigitalInOut(board.A5)
 dir2.direction = digitalio.Direction.OUTPUT
 
-pwm3 = pwmio.PWMOut(board.A3, frequency=5000, duty_cycle=1)
-dir3 = digitalio.DigitalInOut(board.A4)
+pwm3 = pwmio.PWMOut(board.D10, frequency=5000, duty_cycle=1)
+dir3 = digitalio.DigitalInOut(board.D9)
 dir3.direction = digitalio.Direction.OUTPUT
 
 def run(wheel, throttle):
