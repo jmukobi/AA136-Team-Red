@@ -10,5 +10,5 @@ mag = LIS3MDL(i2c)
 
 def report():
     #print(mag.magnetic)
-    report = {"mag":mag.magnetic}
+    report = {"mag":mag.magnetic,"accel":accel_gyro.acceleration,"gyro":accel_gyro.gyro,"temp":accel_gyro.temperature}
     return report

@@ -4,12 +4,10 @@ import magnetorquer
 import wheel
 import time
 import sensor
-
+import actuate
 
 STEP = .1
 
 while True:
-    magnetorquer.run(1, 0)
-    wheel.run(1, 0)
-    print(sensor.report()["mag"])
+    report = sensor.report()
     time.sleep(STEP)

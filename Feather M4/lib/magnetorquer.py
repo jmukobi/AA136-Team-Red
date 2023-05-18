@@ -6,6 +6,7 @@ i2c = board.I2C()  # uses board.SCL and board.SDA
 kit = MotorKit(i2c=i2c)
 
 def run(port, throttle):
+    throttle = throttle/2 #Max magnetorquer voltage = 6V, supply voltage = 12V
     if port == 1:
         kit.motor1.throttle = throttle
     elif port == 2:
