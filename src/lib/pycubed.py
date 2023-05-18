@@ -19,7 +19,7 @@ import neopixel # RGB LED
 # Common CircuitPython Libs
 from os import listdir,stat,statvfs,mkdir,chdir
 #from bitflags import bitFlag,multiBitFlag,multiByte
-#from micropython import const
+from micropython import const
 
 #Sensor Imports
 #import board
@@ -70,8 +70,8 @@ class Satellite:
         """
         Big init routine as the whole board is brought up.
         """
-        #self.BOOTTIME= const(time.time())
-        #self.data_cache={}
+        self.BOOTTIME= const(time.time())
+        self.data_cache={}
         #self.filenumbers={}
         #self.vlowbatt=6.0
         #self.send_buff = memoryview(SEND_BUFF)
@@ -104,8 +104,12 @@ class Satellite:
         self.i2c = board.I2C()  # uses board.SCL and board.SDA
         self.accel_gyro = LSM6DS(self.i2c)
         self.mag = LIS3MDL(self.i2c)
-        self.spi   = board.SPI()
+        #self.spi   = board.SPI()
         self.uart  = busio.UART(board.TX,board.RX)
+
+        self.cs = digitalio.DigitalInOut(board.D5)
+        self.reset = digitalio.DigitalInOut(board.D6)
+        self.spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
         # Define Magnetorquer Pins
         self.motorwing = MotorKit(i2c=self.i2c)
@@ -113,11 +117,11 @@ class Satellite:
         #digitalio.DigitalInOut(board.A3).deinit()
         #pwmio.PWMOut(board.A2).deinit()
         #Define Motor Pins
-        self.pwm1 = pwmio.PWMOut(board.A2, frequency=5000, duty_cycle=1)
-        self.dir1 = digitalio.DigitalInOut(board.A3)
-        self.dir1.direction = digitalio.Direction.OUTPUT
+        #self.pwm1 = pwmio.PWMOut(board.A2, frequency=5000, duty_cycle=1)
+        #self.dir1 = digitalio.DigitalInOut(board.A3)
+        #self.dir1.direction = digitalio.Direction.OUTPUT
 
-        self.pwm2 = pwmio.PWMOut(board.A4, frequency=5000, duty_cycle=1)
+        #self.pwm2 = pwmio.PWMOut(board.A4, frequency=5000, duty_cycle=1)
         self.dir2 = digitalio.DigitalInOut(board.A5)
         self.dir2.direction = digitalio.Direction.OUTPUT
 
@@ -132,6 +136,7 @@ class Satellite:
         # Define filesystem stuff
         self.logfile="/log.txt"
 
+        """
         # Define radio
         _rf_cs1 = digitalio.DigitalInOut(board.RF1_CS)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
@@ -142,7 +147,7 @@ class Satellite:
         _rf_cs1.switch_to_output(value=True)
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
-
+        """
         """
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
@@ -161,15 +166,15 @@ class Satellite:
         try:
             self.neopixel = neopixel.NeoPixel(board.A1, 1, brightness=0.5)
             self.neopixel[0] = (255,255,0)
-            self.hardware['Neopixel'] = True
+            #self.hardware['Neopixel'] = True
         except Exception as e:
             if self.debug: print('[WARNING][Neopixel]',e)
 
         # Initialize magnetorquers
         self.mag_throttle = [0, 0, 0]
-        self.motorwing.motor1.throttle = mag_throttle[0]
-        self.motorwing.motor2.throttle = mag_throttle[1]
-        self.motorwing.motor3.throttle = mag_throttle[2]
+        self.motorwing.motor1.throttle = self.mag_throttle[0]
+        self.motorwing.motor2.throttle = self.mag_throttle[1]
+        self.motorwing.motor3.throttle = self.mag_throttle[2]
 
         """
         # Initialize USB charger
@@ -209,17 +214,16 @@ class Satellite:
         """
         # Initialize radio #1 - UHF
         try:
-            self.radio1 = pycubed_rfm9x.RFM9x(self.spi, _rf_cs1, _rf_rst1,
-                433.0,code_rate=8,baudrate=1320000)
-            # Default LoRa Modulation Settings
-            # Frequency: 433 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
-            self.radio1.dio0=self.radio1_DIO0
-            self.radio1.enable_crc=True
-            self.radio1.ack_delay=0.2
-            self.radio1.sleep()
-            self.hardware['Radio1'] = True
+            # Configure the radio featherwing
+            self.rfm9x = adafruit_rfm9x.RFM9x(self.spi, self.cs, self.reset, 433)
+            self.rfm9x.spreading_factor = 9
+            self.rfm9x.coding_rate = 5
+            self.rfm9x.bandwidth = 500000
+            # Configure the radio settings
+            self.rfm9x.tx_power = 23
+            self.rfm9x.enable_crc = True
         except Exception as e:
-            if self.debug: print('[ERROR][RADIO 1]',e)
+            if self.debug: print('[ERROR][RADIO]',e)
 
         # set PyCubed power mode
         #self.power_mode = 'normal'
@@ -241,7 +245,7 @@ class Satellite:
     @property
     def acceleration(self):
         #if self.hardware['IMU']:
-        return self.IMU.accel # m/s^2
+        return self.accel_gyro # m/s^2
 
     @property
     def magnetic(self):
@@ -262,11 +266,10 @@ class Satellite:
         return self.neopixel[0]
     @RGB.setter
     def RGB(self,value):
-        if self.hardware['Neopixel']:
-            try:
-                self.neopixel[0] = value
-            except Exception as e:
-                print('[WARNING]',e)
+        try:
+            self.neopixel[0] = value
+        except Exception as e:
+            print('[WARNING]',e)
 
     @property
     def magnetorquer(self):

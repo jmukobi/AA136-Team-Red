@@ -5,15 +5,16 @@ from Tasks.template_task import Task
 class task(Task):
     priority = 5
     frequency = 1/10 # once every 10s
-    name='imu'
+    name='sensor'
     color = 'green'
 
     async def main_task(self):
         # take IMU readings
         readings = {
-            'accel':self.cubesat.acceleration,
-            'mag':  self.cubesat.magnetic,
-            'gyro': self.cubesat.gyro,
+            'accel':self.cubesat.accel_gyro.acceleration,
+            'mag':  self.cubesat.mag.magnetic,
+            'gyro': self.cubesat.accel_gyro.gyro,
+            'temp': self.cubesat.accel_gyro.temperature,
         }
 
         # store them in our cubesat data_cache object
