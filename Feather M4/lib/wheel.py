@@ -5,7 +5,7 @@ import digitalio
 
 #Define IO
 pwm1 = pwmio.PWMOut(board.A2, frequency=5000, duty_cycle=1)
-dir1 = digitalio.DigitalInOut(board.A3)
+dir1 = digitalio.DigitalInOut(board.A4)
 dir1.direction = digitalio.Direction.OUTPUT
 
 pwm2 = pwmio.PWMOut(board.A4, frequency=5000, duty_cycle=1)

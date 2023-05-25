@@ -7,7 +7,8 @@ import shutil
 import os
 
 # Set the source folder and destination folder path
-source_folder = 'src/'
+#source_folder = 'src/'
+source_folder = 'Feather M4/'
 
 #Ensure this path matches the drive name of the Feather
 destination_folder = "/media/jacob/CIRCUITPY"
