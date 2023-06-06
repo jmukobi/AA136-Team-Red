@@ -1,3 +1,7 @@
+"""
+This program reads in the data from magnetorquer tests in .csv form and plots it.
+"""
+
 import math
 import csv
 import matplotlib.pyplot as plt

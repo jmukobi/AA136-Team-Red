@@ -1,3 +1,7 @@
+"""
+This script is used to size the flywheel for the reaction wheel assembly.
+"""
+
 import numpy as np
 # L = Iw
 

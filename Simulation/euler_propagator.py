@@ -1,8 +1,17 @@
+"""
+CubeSat Attitude Simulator
+
+This program simulates the attitude of a CubeSat using Euler's equations of motion.
+It is used to test control algorithms for an ADCS system.
+
+Author: Jacob Mukobi
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-def attitude_propagator(dt, t_end, w0, I, torque_func, tolerance=1e-4):
+def attitude_propagator(dt, t_end, w0, I, torque_func, scenario, tolerance=1e-4):
     """
     Propagates the attitude of a CubeSat over time using Euler's equations of motion.
 
@@ -46,8 +55,8 @@ def attitude_propagator(dt, t_end, w0, I, torque_func, tolerance=1e-4):
         theta += w*dt
 
         # Comput torque vector
-        tau = torque_func(t, theta, w, dw_dt, law="PID")
-
+        tau = torque_func(t, theta, w, dw_dt, scenario, law="proportional")
+        #print(np.linalg.norm(tau))
         # Compute the time derivative of the angular velocity
         dw_dt = np.linalg.inv(I) @ (tau - np.cross(w, I @ w))
 
@@ -99,25 +108,44 @@ def rotmat_to_euler(R):
 
     return euler_angles
 
-def torque_func(time, theta, w, alpha, law):
+def torque_func(time, theta, w, alpha, scenario, law):
+    
     t = [0, 0, 0]
 
     max_torque = 1.65e-5 #max torque in Nm
+    
+    if scenario == "Detumble":
+        #print("detumbling")
+        if law == "proporational":
+            #simple inverse proportional control
+            t = -w
+        if law == "PID":
+            #PID control
+            t = -1*w - 0.1*theta + 0.01*alpha 
 
-    if law == "proporational":
+    elif scenario == "Point":
+        #print("pointing")
+        target = np.array([1.5, 1, 2])
+        error = target - theta
+        #print(f"error : {error}")
         #simple inverse proportional control
-        t = -w
-    if law == "PID":
-        #PID control
-        t = -1*w - 0.1*theta + 0.01*alpha 
+        #print("proportional")
+        Kp = .1*max_torque
+        Kd = .01*max_torque
+        #Ki = .001
+        t = Kp*error + Kd*alpha
 
     for i in range(3):
         if t[i] > max_torque:
             t[i] = max_torque
+            #print("Actuator saturation")
         elif t[i] < -max_torque:
             t[i] = -max_torque
+            #print("Actuator saturation")
 
-    t = inject_disturbances(time, t)
+    #print(t)
+
+    #t = inject_disturbances(time, t)
     return t
     
 def inject_disturbances(time, t):
@@ -127,13 +155,22 @@ def inject_disturbances(time, t):
 
 def main():
     # Define the simulation parameters
+
+    #scenario = "Detumble"
+    scenario = "Point"
+
+    if scenario == "Detumble":
+            w0 = np.array([.09, .09, .09])  # initial angular velocity in rad/s
+    elif scenario == "Point":
+            w0 = np.array([0, 0, 0])
+
     dt = 0.05  # seconds
-    t_end = 60*10  # seconds
-    w0 = np.array([.09, .09, .09])  # initial angular velocity in rad/s
+    t_end = 60*30  # seconds
     I = np.diag([.042, .056, .013])  # inertia matrix in kg.m^2
 
     # Propagate the attitude and convert the rotation matrix to Euler angles
-    R, H = attitude_propagator(dt, t_end, w0, I, torque_func)
+    R, H = attitude_propagator(dt, t_end, w0, I, torque_func, scenario)
+
     euler_angles = rotmat_to_euler(R) 
     
     # Plot the Euler angles over time
